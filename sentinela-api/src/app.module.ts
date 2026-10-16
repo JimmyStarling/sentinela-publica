@@ -8,6 +8,7 @@ import { AuthController } from './auth/auth.controller';
 import { AuthServiceService } from './auth-service/auth-service.service';
 import { OrgaosModule } from './orgaos/orgaos.module';
 import { ServicosModule } from './servicos/servicos.module';
+import { PontuacaoModule } from './pontuacao/pontuacao.module';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -33,6 +34,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     }),
     OrgaosModule,
     ServicosModule,
+    PontuacaoModule,
   ],
   controllers: [AppController, AuthController],
   providers: [AppService, AuthServiceService],
