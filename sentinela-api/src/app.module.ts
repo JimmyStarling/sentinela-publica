@@ -9,6 +9,8 @@ import { AuthServiceService } from './auth-service/auth-service.service';
 import { OrgaosModule } from './orgaos/orgaos.module';
 import { ServicosModule } from './servicos/servicos.module';
 import { PontuacaoModule } from './pontuacao/pontuacao.module';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -27,7 +29,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
       useFactory: (c: ConfigService) => ({
         type: 'postgres',
         url: c.get<string>('DATABASE_URL'),
-        ssl: { rejectUnauthorized: false },
+        ssl: {ca: readFileSync(join(process.cwd(), 'certs', 'supabase-ca.crt')).toString(),rejectUnauthorized: true,},
         autoLoadEntities: true,
         synchronize: true, // só em dev! Em produção use migrations
       }),
