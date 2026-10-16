@@ -15,4 +15,10 @@ describe('AuthController', () => {
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
+
+  it('deve retornar login com sucesso', () => {
+    let login = controller.getLogin("Jimmy", "Senha");
+    expect(login).toBe("Login feito com sucesso!");
+  });
+  
 });
