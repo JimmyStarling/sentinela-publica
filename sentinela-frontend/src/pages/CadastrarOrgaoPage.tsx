@@ -1,15 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
-
-interface OrgaoForm {
-  nome: string;
-  esfera: string;
-  cnpj: string;
-  endereco: string;
-  responsavel: string;
-  descricao: string;
-}
+import type { OrgaoForm } from "../types";
 
 const formularioInicial: OrgaoForm = {
   nome: "",
@@ -23,14 +15,14 @@ const formularioInicial: OrgaoForm = {
 const esferas = ["Federal", "Estadual", "Municipal"];
 
 const inputClassName =
-  "h-[35px] w-full rounded-[4px] border border-[#D5DEEA] " +
-  "bg-white px-[7px] text-[10px] text-[#183451] " +
+  "h-[35px] w-full rounded-[4px] border border-line " +
+  "bg-white px-[7px] text-[10px] text-navy " +
   "outline-none transition-colors " +
-  "placeholder:text-[#8A9BB1] " +
+  "placeholder:text-placeholder " +
   "focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15";
 
 const labelClassName =
-  "mb-[5px] block text-[10px] font-semibold text-[#183451]";
+  "mb-[5px] block text-[10px] font-semibold text-navy";
 
 export default function CadastrarOrgaoPage() {
   const navigate = useNavigate();
@@ -68,7 +60,7 @@ export default function CadastrarOrgaoPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#F4F6F8] font-sans text-[#183451]">
+    <div className="flex min-h-screen bg-surface font-sans text-navy">
       <Sidebar />
 
       <main className="flex-1 px-6 py-7 sm:px-9 sm:py-8">
@@ -81,7 +73,7 @@ export default function CadastrarOrgaoPage() {
 
             <nav
               aria-label="Navegação estrutural"
-              className="mt-px flex items-center gap-1 text-[9px] text-[#718198]"
+              className="mt-px flex items-center gap-1 text-[9px] text-muted"
             >
               <span>Cadastros</span>
               <span aria-hidden="true">•</span>
@@ -94,7 +86,7 @@ export default function CadastrarOrgaoPage() {
           </header>
 
           {/* Card do formulário */}
-          <section className="mt-3.75 rounded-[9px] border border-[#DFE6EF] bg-white px-4.25 pb-6 pt-3.5 sm:px-5.5">
+          <section className="mt-3.75 rounded-[9px] border border-line bg-white px-4.25 pb-6 pt-3.5 sm:px-5.5">
             <h2 className="text-[12px] font-bold leading-5">
               Informações do órgão
             </h2>
@@ -131,7 +123,7 @@ export default function CadastrarOrgaoPage() {
                     value={formulario.esfera}
                     onChange={(e) => atualizarCampo("esfera", e.target.value)}
                     className={`${inputClassName} ${
-                      formulario.esfera === "" ? "text-[#8A9BB1]" : ""
+                      formulario.esfera === "" ? "text-placeholder" : ""
                     }`}
                   >
                     <option value="" disabled>
@@ -216,7 +208,7 @@ export default function CadastrarOrgaoPage() {
               </div>
 
               {/* Nota campos obrigatórios */}
-              <p className="mt-4 text-[9px] text-[#718198]">
+              <p className="mt-4 text-[9px] text-muted">
                 * Campos obrigatórios
               </p>
 
@@ -244,14 +236,14 @@ export default function CadastrarOrgaoPage() {
                 <button
                   type="button"
                   onClick={handleVoltar}
-                  className="h-6.5 min-w-18 rounded-sm border border-[#4B79FF] bg-[#E8EEFF] px-3 text-[10px] font-semibold text-[#2860F5] transition-colors hover:bg-[#D9E3FF] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                  className="h-6.5 min-w-18 rounded-sm border border-blue-500 bg-blue-50 px-3 text-[10px] font-semibold text-blue-600 transition-colors hover:bg-blue-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                 >
                   Voltar
                 </button>
 
                 <button
                   type="submit"
-                  className="h-6.5 min-w-27.5 rounded-sm bg-[#2860F5] px-4 text-[10px] font-semibold text-white transition-colors hover:bg-[#1D4ED8] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                  className="h-6.5 min-w-27.5 rounded-sm bg-blue-600 px-4 text-[10px] font-semibold text-white transition-colors hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                 >
                   Salvar órgão
                 </button>

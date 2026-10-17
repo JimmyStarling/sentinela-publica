@@ -1,16 +1,38 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext";
 import Logo from "../components/Logo";
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { usuario, entrar } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [erro, setErro] = useState<string | null>(null);
+  const [enviando, setEnviando] = useState(false);
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  // Rota que o usuário tentou abrir antes de ser mandado ao login.
+  const destino =
+    (location.state as { de?: string } | null)?.de ?? "/inicio";
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    // TODO: integrar com a autenticação real
-    navigate("/inicio");
+    setErro(null);
+    setEnviando(true);
+    try {
+      await entrar(email, password);
+      navigate(destino, { replace: true });
+    } catch {
+      setErro("Não foi possível entrar. Verifique suas credenciais.");
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  // Quem já tem sessão não precisa ver o login.
+  if (usuario) {
+    return <Navigate to={destino} replace />;
   }
 
   return (
@@ -79,11 +101,18 @@ export default function LoginPage() {
               </a>
             </div>
 
+            {erro && (
+              <p role="alert" className="mt-6 text-sm font-medium text-red-600">
+                {erro}
+              </p>
+            )}
+
             <button
               type="submit"
-              className="mt-8 h-12 w-full rounded-md bg-blue-600 text-sm font-bold text-white transition-colors hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+              disabled={enviando}
+              className="mt-8 h-12 w-full rounded-md bg-blue-600 text-sm font-bold text-white transition-colors hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-600/60"
             >
-              Entrar
+              {enviando ? "Entrando..." : "Entrar"}
             </button>
           </form>
 

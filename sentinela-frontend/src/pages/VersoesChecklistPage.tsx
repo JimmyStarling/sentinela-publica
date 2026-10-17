@@ -1,15 +1,6 @@
 import Sidebar from "../components/Sidebar";
-
-type Status = "Ativa" | "Arquivada";
-
-interface Versao {
-  id: string;
-  versao: string;
-  dataCriacao: string;
-  status: Status;
-  descricao: string;
-  acao: "Editar" | "Visualizar";
-}
+import StatusBadge from "../components/StatusBadge";
+import type { Versao } from "../types";
 
 const versoes: Versao[] = [
   {
@@ -30,14 +21,9 @@ const versoes: Versao[] = [
   },
 ];
 
-const statusColor: Record<Status, string> = {
-  Ativa: "text-emerald-600",
-  Arquivada: "text-slate-500",
-};
-
 export default function VersoesChecklistPage() {
   return (
-    <div className="flex min-h-screen bg-[#F4F6F8] font-sans text-[#183451]">
+    <div className="flex min-h-screen bg-surface font-sans text-navy">
       <Sidebar />
 
       <main className="flex-1 px-8 py-8 lg:px-10">
@@ -64,7 +50,7 @@ export default function VersoesChecklistPage() {
 
           {/* Tabela */}
           <section className="mt-6">
-            <div className="grid grid-cols-[0.7fr_1fr_0.9fr_2fr_0.7fr] rounded-t-lg bg-[#E9EEF5] px-5 py-3 text-xs font-semibold text-slate-500">
+            <div className="grid grid-cols-[0.7fr_1fr_0.9fr_2fr_0.7fr] rounded-t-lg bg-subtle px-5 py-3 text-xs font-semibold text-slate-500">
               <span>Versão</span>
               <span>Data de criação</span>
               <span>Status</span>
@@ -84,11 +70,7 @@ export default function VersoesChecklistPage() {
                   <span className="text-sm text-slate-500">
                     {v.dataCriacao}
                   </span>
-                  <span
-                    className={`text-sm font-semibold ${statusColor[v.status]}`}
-                  >
-                    {v.status}
-                  </span>
+                  <StatusBadge status={v.status} />
                   <span className="text-sm text-slate-500">{v.descricao}</span>
                   <button className="text-left text-sm font-semibold text-blue-600 hover:underline">
                     {v.acao}
@@ -99,9 +81,9 @@ export default function VersoesChecklistPage() {
           </section>
 
           {/* Card Importante */}
-          <section className="mt-5 rounded-lg border border-[#CFE0F5] bg-[#EAF3FF] px-5 py-4">
-            <p className="text-sm font-bold text-[#183451]">Importante</p>
-            <p className="mt-1 text-xs leading-5 text-[#183451]">
+          <section className="mt-5 rounded-lg border border-blue-200 bg-blue-50 px-5 py-4">
+            <p className="text-sm font-bold text-navy">Importante</p>
+            <p className="mt-1 text-xs leading-5 text-navy">
               Mudanças no checklist devem ser documentadas e versionadas para
               manter a rastreabilidade.
             </p>
@@ -109,7 +91,7 @@ export default function VersoesChecklistPage() {
 
           {/* Botão Sair */}
           <div className="mt-6 flex justify-end">
-            <button className="h-7.5 min-w-17.5 rounded-sm bg-[#E53935] px-4 text-xs font-semibold text-white transition-colors hover:bg-[#C62828]">
+            <button className="h-7.5 min-w-17.5 rounded-sm bg-red-600 px-4 text-xs font-semibold text-white transition-colors hover:bg-red-700">
               Sair
             </button>
           </div>

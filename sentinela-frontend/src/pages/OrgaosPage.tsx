@@ -1,14 +1,7 @@
 import { Plus, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
-
-interface Orgao {
-  id: string;
-  nome: string;
-  sigla: string;
-  responsavel: string;
-  servicos: number;
-}
+import type { Orgao } from "../types";
 
 const orgaos: Orgao[] = [
   {
@@ -38,7 +31,7 @@ export default function OrgaosPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex min-h-screen bg-[#F4F6F8] font-sans text-[#183451]">
+    <div className="flex min-h-screen bg-surface font-sans text-navy">
       <Sidebar />
 
       <main className="flex-1 px-8 py-8 lg:px-10">
@@ -78,7 +71,7 @@ export default function OrgaosPage() {
           </div>
 
           <section className="mt-8">
-            <div className="grid grid-cols-4 rounded-t-lg bg-[#E9EEF5] px-5 py-3 text-xs font-semibold text-slate-500">
+            <div className="grid grid-cols-4 rounded-t-lg bg-subtle px-5 py-3 text-xs font-semibold text-slate-500">
               <span>Órgão</span>
               <span>Sigla</span>
               <span>Responsável</span>

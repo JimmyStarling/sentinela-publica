@@ -1,16 +1,15 @@
 import { Search, Plus } from "lucide-react";
 import Sidebar from "../components/Sidebar";
+import StatusBadge from "../components/StatusBadge";
+import type { Avaliacao as AvaliacaoBase } from "../types";
 
-type Status = "Em andamento" | "Concluída";
-
-interface Avaliacao {
-  id: string;
-  orgao: string;
-  servico: string;
-  inicio: string;
-  status: Status;
+/** Recorte exibido na listagem, mais a ação oferecida na linha. */
+type Avaliacao = Pick<
+  AvaliacaoBase,
+  "id" | "orgao" | "servico" | "inicio" | "status"
+> & {
   acao: "Continuar" | "Visualizar";
-}
+};
 
 const avaliacoes: Avaliacao[] = [
   {
@@ -39,14 +38,9 @@ const avaliacoes: Avaliacao[] = [
   },
 ];
 
-const statusColor: Record<Status, string> = {
-  "Em andamento": "text-blue-600",
-  Concluída: "text-emerald-600",
-};
-
 export default function AvaliacoesPage() {
   return (
-    <div className="flex min-h-screen bg-[#F4F6F8] font-sans text-[#183451]">
+    <div className="flex min-h-screen bg-surface font-sans text-navy">
       <Sidebar />
 
       <main className="flex-1 px-8 py-8 lg:px-10">
@@ -87,7 +81,7 @@ export default function AvaliacoesPage() {
           {/* Tabela */}
           <section className="mt-8">
             {/* Cabeçalho da Tabela */}
-            <div className="grid grid-cols-4 rounded-t-lg bg-[#E9EEF5] px-5 py-3 text-xs font-semibold text-slate-500">
+            <div className="grid grid-cols-4 rounded-t-lg bg-subtle px-5 py-3 text-xs font-semibold text-slate-500">
               <span>Órgão / Serviço</span>
               <span>Início</span>
               <span>Status</span>
@@ -110,11 +104,7 @@ export default function AvaliacoesPage() {
 
                   <span className="text-sm text-slate-500">{item.inicio}</span>
 
-                  <span
-                    className={`text-sm font-semibold ${statusColor[item.status]}`}
-                  >
-                    {item.status}
-                  </span>
+                  <StatusBadge status={item.status} />
 
                   <button className="text-left text-sm font-semibold text-blue-600 hover:underline">
                     {item.acao}
