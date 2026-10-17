@@ -26,3 +26,28 @@ export function listarOrgaos() {
 export function criarOrgao(dados: { nome: string; responsavel: string }) {
   return api.post<OrgaoApi>("/orgaos", dados);
 }
+
+/** GET /orgaos/:id — carrega a relação `servicos`. Responde 404 se não existir. */
+export function buscarOrgao(id: number) {
+  return api.get<OrgaoApi>(`/orgaos/${id}`);
+}
+
+/** PATCH /orgaos/:id — aceita os mesmos campos do POST, todos opcionais. */
+export function atualizarOrgao(
+  id: number,
+  dados: { nome?: string; responsavel?: string },
+) {
+  return api.patch<OrgaoApi>(`/orgaos/${id}`, dados);
+}
+
+/**
+ * DELETE /orgaos/:id — responde 200 com corpo vazio.
+ *
+ * A relação em `Servico` usa onDelete: 'RESTRICT'. Excluir um órgão que ainda
+ * tem serviços viola a chave estrangeira, e o DatabaseExceptionFilter da API
+ * traduz isso em 409 ("existem registros relacionados"). A tela checa antes
+ * mesmo assim, para dizer quantos serviços estão vinculados.
+ */
+export function excluirOrgao(id: number) {
+  return api.remove<void>(`/orgaos/${id}`);
+}

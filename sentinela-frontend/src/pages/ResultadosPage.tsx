@@ -1,7 +1,11 @@
 import { FileText } from "lucide-react";
+import { useLocation } from "react-router-dom";
 import type { DominioResultado } from "../types";
+import type { ResultadoPontuacao } from "../services/pontuacao";
+import { COR_NIVEL, ROTULO_NIVEL } from "../lib/pontuacao";
 
-const resultadoPorDominio: DominioResultado[] = [
+/** Usado quando a tela é aberta direto, sem vir do checklist. */
+const exemploPorDominio: DominioResultado[] = [
   { nome: "Governança e gestão", percentual: 80 },
   { nome: "Controle de acesso", percentual: 60 },
   { nome: "Proteção de dados", percentual: 40 },
@@ -58,6 +62,34 @@ function CircularProgress({ valor }: { valor: number }) {
 }
 
 export default function ResultadosPage() {
+  // O checklist envia o resultado de POST /pontuacao/calcular pelo state da
+  // navegação. Sem ele, a tela segue mostrando o exemplo ilustrativo.
+  const location = useLocation();
+  const resultado = (location.state as { resultado?: ResultadoPontuacao } | null)
+    ?.resultado;
+
+  // nota é null quando todas as respostas do domínio são "Não se aplica" —
+  // isso é diferente de 0%, e a linha precisa dizer isso.
+  const linhas: { nome: string; nota: number | null }[] = resultado
+    ? resultado.dominios.map((d) => ({
+        nome: d.nome,
+        nota: d.nota === null ? null : Math.round(d.nota),
+      }))
+    : exemploPorDominio.map((d) => ({ nome: d.nome, nota: d.percentual }));
+
+  const notaGeral = resultado ? Math.round(resultado.notaGeral ?? 0) : 55;
+
+  const rotuloNivel = resultado
+    ? resultado.nivelGeral
+      ? ROTULO_NIVEL[resultado.nivelGeral]
+      : "Sem perguntas aplicáveis"
+    : "Maturidade intermediária";
+
+  const corNivel =
+    resultado && resultado.nivelGeral
+      ? COR_NIVEL[resultado.nivelGeral]
+      : "text-amber-700";
+
   return (
     <main className="min-h-screen bg-surface px-6 py-7 font-sans text-navy sm:px-10 sm:py-8">
       <div className="mx-auto w-full max-w-205">
@@ -72,7 +104,11 @@ export default function ResultadosPage() {
           >
             <span>Resultados</span>
             <span aria-hidden="true">•</span>
-            <span>Exemplo ilustrativo com dados fictícios</span>
+            <span>
+              {resultado
+                ? "Cálculo da avaliação enviada"
+                : "Exemplo ilustrativo com dados fictícios"}
+            </span>
           </nav>
 
           <h1 className="mt-2.75 text-[17px] font-bold leading-6 tracking-[-0.3px]">
@@ -88,10 +124,10 @@ export default function ResultadosPage() {
               Pontuação geral
             </h2>
 
-            <CircularProgress valor={55} />
+            <CircularProgress valor={notaGeral} />
 
-            <p className="mt-2.5 text-[11px] font-bold text-amber-700">
-              Maturidade intermediária
+            <p className={`mt-2.5 text-[11px] font-bold ${corNivel}`}>
+              {rotuloNivel}
             </p>
           </section>
 
@@ -102,7 +138,7 @@ export default function ResultadosPage() {
             </h2>
 
             <ul className="mt-3 flex flex-col gap-2.25">
-              {resultadoPorDominio.map((d) => (
+              {linhas.map((d) => (
                 <li key={d.nome} className="flex items-center gap-3">
                   <span className="w-33.75 shrink-0 text-[9px] text-navy">
                     {d.nome}
@@ -111,12 +147,12 @@ export default function ResultadosPage() {
                   <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-track">
                     <div
                       className="h-full rounded-full bg-blue-600"
-                      style={{ width: `${d.percentual}%` }}
+                      style={{ width: `${d.nota ?? 0}%` }}
                     />
                   </div>
 
                   <span className="w-7.5 shrink-0 text-right text-[9px] font-semibold text-navy">
-                    {d.percentual}%
+                    {d.nota === null ? "N/A" : `${d.nota}%`}
                   </span>
                 </li>
               ))}
@@ -129,6 +165,13 @@ export default function ResultadosPage() {
           <h2 className="text-[12px] font-bold leading-5">
             Lacunas e recomendações prioritárias
           </h2>
+
+          {resultado && (
+            <p className="mt-1.5 text-[9px] text-muted">
+              Texto fixo: a API ainda não gera recomendações a partir das
+              respostas.
+            </p>
+          )}
 
           <ul className="mt-2.5 flex flex-col gap-2">
             {lacunas.map((item) => (

@@ -1,13 +1,22 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Servico } from "../types";
 import { ApiError } from "../services/api";
 import { listarServicos } from "../services/servicos";
 
-/** Carrega GET /servicos uma vez, com estado de carregamento e erro. */
+/**
+ * Carrega GET /servicos, com estado de carregamento e erro. `recarregar` é
+ * usado depois de excluir um serviço, para a lista refletir a mudança.
+ */
 export function useServicos(orgaoId?: number) {
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
+  const [versao, setVersao] = useState(0);
+
+  const recarregar = useCallback(() => {
+    setCarregando(true);
+    setVersao((v) => v + 1);
+  }, []);
 
   useEffect(() => {
     // Evita atualizar o estado se o componente sair antes da resposta.
@@ -34,7 +43,7 @@ export function useServicos(orgaoId?: number) {
     return () => {
       ativo = false;
     };
-  }, [orgaoId]);
+  }, [orgaoId, versao]);
 
-  return { servicos, carregando, erro };
+  return { servicos, carregando, erro, recarregar };
 }

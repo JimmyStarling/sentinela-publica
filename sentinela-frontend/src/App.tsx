@@ -26,8 +26,10 @@ export default function App() {
         <Route path="/inicio" element={<DashboardPage />} />
         <Route path="/orgaos" element={<OrgaosPage />} />
         <Route path="/orgaos/cadastrar" element={<CadastrarOrgaoPage />} />
+        <Route path="/orgaos/:id/editar" element={<CadastrarOrgaoPage />} />
         <Route path="/servicos" element={<ServicosPage />} />
         <Route path="/servicos/cadastrar" element={<CadastrarServicoPage />} />
+        <Route path="/servicos/:id/editar" element={<CadastrarServicoPage />} />
         <Route path="/avaliacoes" element={<AvaliacoesPage />} />
         <Route
           path="/avaliacoes/checklist"

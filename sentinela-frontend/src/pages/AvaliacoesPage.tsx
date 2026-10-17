@@ -1,7 +1,10 @@
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Search, Plus } from "lucide-react";
 import Sidebar from "../components/Sidebar";
 import StatusBadge from "../components/StatusBadge";
 import type { Avaliacao as AvaliacaoBase } from "../types";
+import { normalizar } from "../lib/texto";
 
 /** Recorte exibido na listagem, mais a ação oferecida na linha. */
 type Avaliacao = Pick<
@@ -39,6 +42,19 @@ const avaliacoes: Avaliacao[] = [
 ];
 
 export default function AvaliacoesPage() {
+  const navigate = useNavigate();
+  const [busca, setBusca] = useState("");
+
+  const avaliacoesFiltradas = useMemo(() => {
+    const termo = normalizar(busca);
+    if (!termo) return avaliacoes;
+    return avaliacoes.filter(
+      (item) =>
+        normalizar(item.orgao).includes(termo) ||
+        normalizar(item.servico).includes(termo),
+    );
+  }, [busca]);
+
   return (
     <div className="flex min-h-screen bg-surface font-sans text-navy">
       <Sidebar />
@@ -66,13 +82,20 @@ export default function AvaliacoesPage() {
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
               />
               <input
-                type="text"
+                type="search"
+                value={busca}
+                onChange={(e) => setBusca(e.target.value)}
+                aria-label="Buscar avaliação"
                 placeholder="Buscar avaliação..."
                 className="h-10 w-full rounded-md border border-slate-200 bg-white pl-10 pr-4 text-sm outline-none transition-colors placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
 
-            <button className="flex h-10 items-center justify-center gap-2 rounded-md bg-blue-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">
+            <button
+              type="button"
+              onClick={() => navigate("/avaliacoes/checklist")}
+              className="flex h-10 items-center justify-center gap-2 rounded-md bg-blue-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+            >
               <Plus size={16} />
               Nova avaliação
             </button>
@@ -88,9 +111,15 @@ export default function AvaliacoesPage() {
               <span>Ações</span>
             </div>
 
+            {avaliacoesFiltradas.length === 0 && (
+              <p className="bg-white px-5 py-6 text-sm text-slate-500">
+                Nenhuma avaliação encontrada para "{busca}".
+              </p>
+            )}
+
             {/* Linhas da Tabela */}
             <ul className="flex flex-col bg-white">
-              {avaliacoes.map((item) => (
+              {avaliacoesFiltradas.map((item) => (
                 <li
                   key={item.id}
                   className="grid grid-cols-4 items-center border-b border-slate-100 px-5 py-4 last:border-b-0 hover:bg-slate-50/50 transition-colors"
@@ -106,7 +135,17 @@ export default function AvaliacoesPage() {
 
                   <StatusBadge status={item.status} />
 
-                  <button className="text-left text-sm font-semibold text-blue-600 hover:underline">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigate(
+                        item.acao === "Continuar"
+                          ? "/avaliacoes/checklist"
+                          : "/resultados",
+                      )
+                    }
+                    className="text-left text-sm font-semibold text-blue-600 hover:underline"
+                  >
                     {item.acao}
                   </button>
                 </li>

@@ -10,8 +10,10 @@ export type Criticidade = "baixa" | "media" | "alta";
 export interface Servico {
   id: string;
   nome: string;
-  /** Nome do órgão ao qual o serviço está vinculado. */
+  /** Nome do órgão ao qual o serviço está vinculado, para exibição. */
   orgao: string;
+  /** Id do órgão, usado ao editar e ao filtrar. */
+  orgaoId: number;
   responsavel: string;
   tipoDado: TipoDado;
   criticidade: Criticidade;

@@ -1,7 +1,9 @@
-import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState, type FormEvent } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import type { OrgaoForm } from "../types";
+import { ApiError } from "../services/api";
+import { atualizarOrgao, buscarOrgao, criarOrgao } from "../services/orgaos";
 
 const formularioInicial: OrgaoForm = {
   nome: "",
@@ -20,10 +22,43 @@ const labelClassName =
 
 export default function CadastrarOrgaoPage() {
   const navigate = useNavigate();
+  // A mesma tela atende /orgaos/cadastrar e /orgaos/:id/editar.
+  const { id } = useParams();
+  const editando = id !== undefined;
 
   const [formulario, setFormulario] = useState<OrgaoForm>(formularioInicial);
+  const [carregando, setCarregando] = useState(editando);
+  const [enviando, setEnviando] = useState(false);
   const [mensagem, setMensagem] = useState("");
   const [erro, setErro] = useState("");
+
+  useEffect(() => {
+    if (id === undefined) return;
+
+    let ativo = true;
+
+    buscarOrgao(Number(id))
+      .then((orgao) => {
+        if (!ativo) return;
+        setFormulario({ nome: orgao.nome, responsavel: orgao.responsavel });
+        setErro("");
+      })
+      .catch((motivo: unknown) => {
+        if (!ativo) return;
+        setErro(
+          motivo instanceof ApiError
+            ? motivo.message
+            : "Erro inesperado ao carregar o órgão.",
+        );
+      })
+      .finally(() => {
+        if (ativo) setCarregando(false);
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, [id]);
 
   function atualizarCampo(campo: keyof OrgaoForm, valor: string) {
     setFormulario((estadoAtual) => ({ ...estadoAtual, [campo]: valor }));
@@ -31,7 +66,7 @@ export default function CadastrarOrgaoPage() {
     setErro("");
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const camposObrigatorios = [formulario.nome, formulario.responsavel];
@@ -41,12 +76,33 @@ export default function CadastrarOrgaoPage() {
       return;
     }
 
-    console.log("Dados do órgão:", formulario);
-
     setErro("");
-    setMensagem(
-      "Órgão validado com sucesso! A integração com a API ainda precisa ser feita.",
-    );
+    setMensagem("");
+    setEnviando(true);
+
+    const dados = {
+      nome: formulario.nome.trim(),
+      responsavel: formulario.responsavel.trim(),
+    };
+
+    try {
+      if (editando) {
+        await atualizarOrgao(Number(id), dados);
+        setMensagem("Órgão atualizado com sucesso.");
+      } else {
+        await criarOrgao(dados);
+        setFormulario(formularioInicial);
+        setMensagem("Órgão cadastrado com sucesso.");
+      }
+    } catch (motivo: unknown) {
+      setErro(
+        motivo instanceof ApiError
+          ? motivo.message
+          : `Erro inesperado ao ${editando ? "atualizar" : "cadastrar"} o órgão.`,
+      );
+    } finally {
+      setEnviando(false);
+    }
   }
 
   function handleVoltar() {
@@ -75,7 +131,7 @@ export default function CadastrarOrgaoPage() {
             </nav>
 
             <h1 className="mt-2.75 text-[17px] font-bold leading-6 tracking-[-0.3px]">
-              Cadastrar órgão
+              {editando ? "Editar órgão" : "Cadastrar órgão"}
             </h1>
           </header>
 
@@ -160,9 +216,14 @@ export default function CadastrarOrgaoPage() {
 
                 <button
                   type="submit"
-                  className="h-6.5 min-w-27.5 rounded-sm bg-blue-600 px-4 text-[10px] font-semibold text-white transition-colors hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                  disabled={enviando || carregando}
+                  className="h-6.5 min-w-27.5 rounded-sm bg-blue-600 px-4 text-[10px] font-semibold text-white transition-colors hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-blue-600/60"
                 >
-                  Salvar órgão
+                  {enviando
+                    ? "Salvando..."
+                    : editando
+                      ? "Salvar alterações"
+                      : "Salvar órgão"}
                 </button>
               </div>
             </form>

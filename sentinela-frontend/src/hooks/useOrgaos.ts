@@ -1,12 +1,22 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ApiError } from "../services/api";
 import { listarOrgaos, type OrgaoApi } from "../services/orgaos";
 
-/** Carrega GET /orgaos uma vez, com estado de carregamento e erro. */
+/**
+ * Carrega GET /orgaos, com estado de carregamento e erro. `recarregar` é
+ * usado depois de excluir um órgão, para a lista refletir a mudança.
+ */
 export function useOrgaos() {
   const [orgaos, setOrgaos] = useState<OrgaoApi[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
+  // Incrementar força o efeito a rodar de novo.
+  const [versao, setVersao] = useState(0);
+
+  const recarregar = useCallback(() => {
+    setCarregando(true);
+    setVersao((v) => v + 1);
+  }, []);
 
   useEffect(() => {
     let ativo = true;
@@ -32,7 +42,7 @@ export function useOrgaos() {
     return () => {
       ativo = false;
     };
-  }, []);
+  }, [versao]);
 
-  return { orgaos, carregando, erro };
+  return { orgaos, carregando, erro, recarregar };
 }

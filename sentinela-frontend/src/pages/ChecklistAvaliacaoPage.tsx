@@ -2,7 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Paperclip } from "lucide-react";
 import type { Dominio } from "../types";
-import type { StatusResposta } from "../services/pontuacao";
+import { ApiError } from "../services/api";
+import {
+  calcularPontuacao,
+  type StatusResposta,
+} from "../services/pontuacao";
 
 const dominios: Dominio[] = [
   { id: 1, titulo: "Governança e gestão" },
@@ -24,12 +28,43 @@ const opcoes: { valor: StatusResposta; label: string }[] = [
 export default function ChecklistAvaliacaoPage() {
   const navigate = useNavigate();
   const [dominioAtivo, setDominioAtivo] = useState(1);
-  const [resposta, setResposta] = useState<StatusResposta | "">("");
-  const [evidencia, setEvidencia] = useState("");
+  // Resposta e evidência são guardadas por domínio: antes havia um estado só,
+  // então trocar de domínio carregava a resposta do anterior.
+  const [respostas, setRespostas] = useState<Record<number, StatusResposta>>(
+    {},
+  );
+  const [evidencias, setEvidencias] = useState<Record<number, string>>({});
+  const [enviando, setEnviando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
 
-  function handleFinalizar() {
-    // Navega para a página de resultado
-    navigate("/resultados");
+  const respondidos = Object.keys(respostas).length;
+  const completo = respondidos === dominios.length;
+  const progresso = Math.round((respondidos / dominios.length) * 100);
+
+  async function handleFinalizar() {
+    if (!completo) return;
+
+    setErro(null);
+    setEnviando(true);
+
+    try {
+      const resultado = await calcularPontuacao(
+        // Um domínio por aba, com a única pergunta existente hoje.
+        dominios.map((d) => ({
+          nome: d.titulo,
+          respostas: [respostas[d.id]],
+        })),
+      );
+      navigate("/resultados", { state: { resultado } });
+    } catch (motivo: unknown) {
+      setErro(
+        motivo instanceof ApiError
+          ? motivo.message
+          : "Erro inesperado ao calcular a pontuação.",
+      );
+    } finally {
+      setEnviando(false);
+    }
   }
 
   return (
@@ -59,7 +94,10 @@ export default function ChecklistAvaliacaoPage() {
 
         {/* Barra de progresso */}
         <div className="mt-3.25 h-1.25 w-full overflow-hidden rounded-full bg-track">
-          <div className="h-full w-[25%] rounded-full bg-blue-600" />
+          <div
+            className="h-full rounded-full bg-blue-600 transition-all"
+            style={{ width: `${progresso}%` }}
+          />
         </div>
 
         {/* Conteúdo: Domínios + Questionário */}
@@ -83,6 +121,14 @@ export default function ChecklistAvaliacaoPage() {
                       }`}
                     >
                       {d.id}. {d.titulo}
+                      {respostas[d.id] && (
+                        <span
+                          aria-label="respondido"
+                          className="ml-1 text-green-600"
+                        >
+                          ✓
+                        </span>
+                      )}
                     </button>
                   </li>
                 );
@@ -112,9 +158,12 @@ export default function ChecklistAvaliacaoPage() {
                     type="radio"
                     name="resposta"
                     value={op.valor}
-                    checked={resposta === op.valor}
+                    checked={respostas[dominioAtivo] === op.valor}
                     onChange={(e) =>
-                      setResposta(e.target.value as StatusResposta)
+                      setRespostas((atual) => ({
+                        ...atual,
+                        [dominioAtivo]: e.target.value as StatusResposta,
+                      }))
                     }
                     className="h-2.75 w-2.75 accent-blue-600"
                   />
@@ -141,8 +190,13 @@ export default function ChecklistAvaliacaoPage() {
 
               <input
                 type="text"
-                value={evidencia}
-                onChange={(e) => setEvidencia(e.target.value)}
+                value={evidencias[dominioAtivo] ?? ""}
+                onChange={(e) =>
+                  setEvidencias((atual) => ({
+                    ...atual,
+                    [dominioAtivo]: e.target.value,
+                  }))
+                }
                 className="mt-2 h-6.5 w-full rounded-sm border border-line bg-white px-1.75 text-[10px] text-navy outline-none placeholder:text-placeholder focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15"
                 placeholder="Descreva a referência ou observação"
               />
@@ -150,9 +204,21 @@ export default function ChecklistAvaliacaoPage() {
 
             {/* Ações */}
             <div className="mt-5.5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <p className="text-[9px] text-muted">
-                Você pode salvar e retomar esta avaliação depois.
-              </p>
+              <div>
+                <p className="text-[9px] text-muted">
+                  {completo
+                    ? "Todos os domínios respondidos."
+                    : `Respondidos ${respondidos} de ${dominios.length} domínios.`}
+                </p>
+                {erro && (
+                  <p
+                    role="alert"
+                    className="mt-1 text-[9px] font-medium text-red-600"
+                  >
+                    {erro}
+                  </p>
+                )}
+              </div>
 
               <div className="flex items-center gap-2.25">
                 <button
@@ -166,9 +232,15 @@ export default function ChecklistAvaliacaoPage() {
                 <button
                   type="button"
                   onClick={handleFinalizar}
-                  className="h-6.5 min-w-32.5 rounded-sm bg-blue-600 px-4 text-[10px] font-semibold text-white transition-colors hover:bg-blue-700"
+                  disabled={!completo || enviando}
+                  title={
+                    completo
+                      ? undefined
+                      : "Responda todos os domínios para finalizar."
+                  }
+                  className="h-6.5 min-w-32.5 rounded-sm bg-blue-600 px-4 text-[10px] font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-600/50"
                 >
-                  Finalizar avaliação
+                  {enviando ? "Calculando..." : "Finalizar avaliação"}
                 </button>
               </div>
             </div>

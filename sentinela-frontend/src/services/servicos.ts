@@ -20,6 +20,7 @@ function paraServico(bruto: ServicoApi): Servico {
     id: String(bruto.id),
     nome: bruto.nome,
     orgao: bruto.orgao.nome,
+    orgaoId: bruto.orgao.id,
     responsavel: bruto.responsavel,
     tipoDado: bruto.tipoDado,
     criticidade: bruto.criticidade,
@@ -47,4 +48,28 @@ export function criarServico(dados: {
   orgaoId: number;
 }) {
   return api.post<ServicoApi>("/servicos", dados);
+}
+
+/** GET /servicos/:id — o órgão vem aninhado. Responde 404 se não existir. */
+export function buscarServico(id: number) {
+  return api.get<ServicoApi>(`/servicos/${id}`);
+}
+
+/** PATCH /servicos/:id — aceita os mesmos campos do POST, todos opcionais. */
+export function atualizarServico(
+  id: number,
+  dados: {
+    nome?: string;
+    responsavel?: string;
+    tipoDado?: TipoDado;
+    criticidade?: Criticidade;
+    orgaoId?: number;
+  },
+) {
+  return api.patch<ServicoApi>(`/servicos/${id}`, dados);
+}
+
+/** DELETE /servicos/:id — responde 200 com corpo vazio. */
+export function excluirServico(id: number) {
+  return api.remove<void>(`/servicos/${id}`);
 }

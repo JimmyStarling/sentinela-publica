@@ -1,9 +1,13 @@
-import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState, type FormEvent } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import type { ServicoForm } from "../types";
 import { ApiError } from "../services/api";
-import { criarServico } from "../services/servicos";
+import {
+  atualizarServico,
+  buscarServico,
+  criarServico,
+} from "../services/servicos";
 import { useOrgaos } from "../hooks/useOrgaos";
 import {
   CRITICIDADES,
@@ -32,13 +36,51 @@ const labelClassName =
 
 export default function CadastrarServicoPage() {
   const navigate = useNavigate();
+  // A mesma tela atende /servicos/cadastrar e /servicos/:id/editar.
+  const { id } = useParams();
+  const editando = id !== undefined;
 
   const { orgaos, carregando: carregandoOrgaos, erro: erroOrgaos } =
     useOrgaos();
   const [formulario, setFormulario] = useState<ServicoForm>(formularioInicial);
+  const [carregando, setCarregando] = useState(editando);
   const [enviando, setEnviando] = useState(false);
   const [mensagem, setMensagem] = useState("");
   const [erro, setErro] = useState("");
+
+  useEffect(() => {
+    if (id === undefined) return;
+
+    let ativo = true;
+
+    buscarServico(Number(id))
+      .then((servico) => {
+        if (!ativo) return;
+        setFormulario({
+          orgaoId: servico.orgao.id,
+          nome: servico.nome,
+          tipoDado: servico.tipoDado,
+          criticidade: servico.criticidade,
+          responsavel: servico.responsavel,
+        });
+        setErro("");
+      })
+      .catch((motivo: unknown) => {
+        if (!ativo) return;
+        setErro(
+          motivo instanceof ApiError
+            ? motivo.message
+            : "Erro inesperado ao carregar o serviço.",
+        );
+      })
+      .finally(() => {
+        if (ativo) setCarregando(false);
+      });
+
+    return () => {
+      ativo = false;
+    };
+  }, [id]);
 
   function atualizarCampo<C extends keyof ServicoForm>(
     campo: C,
@@ -67,21 +109,28 @@ export default function CadastrarServicoPage() {
     setMensagem("");
     setEnviando(true);
 
+    const dados = {
+      nome: formulario.nome.trim(),
+      responsavel: formulario.responsavel.trim(),
+      tipoDado: formulario.tipoDado,
+      criticidade: formulario.criticidade,
+      orgaoId: formulario.orgaoId,
+    };
+
     try {
-      await criarServico({
-        nome: formulario.nome.trim(),
-        responsavel: formulario.responsavel.trim(),
-        tipoDado: formulario.tipoDado,
-        criticidade: formulario.criticidade,
-        orgaoId: formulario.orgaoId,
-      });
-      setFormulario(formularioInicial);
-      setMensagem("Serviço cadastrado com sucesso.");
+      if (editando) {
+        await atualizarServico(Number(id), dados);
+        setMensagem("Serviço atualizado com sucesso.");
+      } else {
+        await criarServico(dados);
+        setFormulario(formularioInicial);
+        setMensagem("Serviço cadastrado com sucesso.");
+      }
     } catch (motivo: unknown) {
       setErro(
         motivo instanceof ApiError
           ? motivo.message
-          : "Erro inesperado ao cadastrar o serviço.",
+          : `Erro inesperado ao ${editando ? "atualizar" : "cadastrar"} o serviço.`,
       );
     } finally {
       setEnviando(false);
@@ -113,7 +162,7 @@ export default function CadastrarServicoPage() {
             </nav>
 
             <h1 className="mt-2.75 text-[17px] font-bold leading-6 tracking-[-0.3px]">
-              Cadastrar serviço
+              {editando ? "Editar serviço" : "Cadastrar serviço"}
             </h1>
           </header>
 
@@ -290,10 +339,14 @@ export default function CadastrarServicoPage() {
 
                 <button
                   type="submit"
-                  disabled={enviando}
+                  disabled={enviando || carregando}
                   className="h-5.75 min-w-27.5 rounded-sm bg-blue-600 px-4 text-[10px] font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-600/60"
                 >
-                  {enviando ? "Salvando..." : "Salvar serviço"}
+                  {enviando
+                    ? "Salvando..."
+                    : editando
+                      ? "Salvar alterações"
+                      : "Salvar serviço"}
                 </button>
               </div>
             </form>

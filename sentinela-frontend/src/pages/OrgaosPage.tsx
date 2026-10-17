@@ -1,15 +1,23 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Plus, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
+import { ApiError } from "../services/api";
+import { excluirOrgao } from "../services/orgaos";
 import { useOrgaos } from "../hooks/useOrgaos";
 import { useServicos } from "../hooks/useServicos";
+import { normalizar } from "../lib/texto";
 
 export default function OrgaosPage() {
   const navigate = useNavigate();
-  const { orgaos, carregando: carregandoOrgaos, erro: erroOrgaos } =
-    useOrgaos();
-  const { servicos, erro: erroServicos } = useServicos();
+  const {
+    orgaos,
+    carregando: carregandoOrgaos,
+    erro: erroOrgaos,
+    recarregar,
+  } = useOrgaos();
+  const { servicos, erro: erroServicos, recarregar: recarregarServicos } =
+    useServicos();
 
   // GET /orgaos não carrega a relação `servicos`, então a contagem é
   // derivada de GET /servicos. O nome do órgão é único na API, o que torna
@@ -22,7 +30,55 @@ export default function OrgaosPage() {
     return contagem;
   }, [servicos]);
 
+  const [busca, setBusca] = useState("");
+  const [excluindo, setExcluindo] = useState<number | null>(null);
+  const [erroAcao, setErroAcao] = useState<string | null>(null);
+
+  const orgaosFiltrados = useMemo(() => {
+    const termo = normalizar(busca);
+    if (!termo) return orgaos;
+    return orgaos.filter(
+      (orgao) =>
+        normalizar(orgao.nome).includes(termo) ||
+        normalizar(orgao.responsavel).includes(termo),
+    );
+  }, [orgaos, busca]);
+
   const erro = erroOrgaos ?? erroServicos;
+
+  async function handleExcluir(id: number, nome: string) {
+    const vinculados = servicosPorOrgao.get(nome) ?? 0;
+
+    // A API já devolve 409 nesse caso, mas a mensagem dela é genérica;
+    // checar aqui permite dizer quantos serviços estão vinculados.
+    if (vinculados > 0) {
+      setErroAcao(
+        `"${nome}" tem ${vinculados} serviço(s) vinculado(s). Exclua ou mova os serviços antes de excluir o órgão.`,
+      );
+      return;
+    }
+
+    if (!window.confirm(`Excluir o órgão "${nome}"? Esta ação é definitiva.`)) {
+      return;
+    }
+
+    setErroAcao(null);
+    setExcluindo(id);
+
+    try {
+      await excluirOrgao(id);
+      recarregar();
+      recarregarServicos();
+    } catch (motivo: unknown) {
+      setErroAcao(
+        motivo instanceof ApiError
+          ? motivo.message
+          : "Erro inesperado ao excluir o órgão.",
+      );
+    } finally {
+      setExcluindo(null);
+    }
+  }
 
   return (
     <div className="flex min-h-screen bg-surface font-sans text-navy">
@@ -49,7 +105,10 @@ export default function OrgaosPage() {
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
               />
               <input
-                type="text"
+                type="search"
+                value={busca}
+                onChange={(e) => setBusca(e.target.value)}
+                aria-label="Buscar órgão"
                 placeholder="Buscar órgão..."
                 className="h-10 w-full rounded-md border border-slate-200 bg-white pl-10 pr-4 text-sm outline-none transition-colors placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
               />
@@ -65,11 +124,21 @@ export default function OrgaosPage() {
           </div>
 
           <section className="mt-8">
-            <div className="grid grid-cols-3 rounded-t-lg bg-subtle px-5 py-3 text-xs font-semibold text-slate-500">
+            <div className="grid grid-cols-4 rounded-t-lg bg-subtle px-5 py-3 text-xs font-semibold text-slate-500">
               <span>Órgão</span>
               <span>Responsável</span>
               <span>Serviços</span>
+              <span>Ações</span>
             </div>
+
+            {erroAcao && (
+              <p
+                role="alert"
+                className="bg-white px-5 pt-4 text-sm font-medium text-red-600"
+              >
+                {erroAcao}
+              </p>
+            )}
 
             {carregandoOrgaos && (
               <p className="bg-white px-5 py-6 text-sm text-slate-500">
@@ -92,11 +161,20 @@ export default function OrgaosPage() {
               </p>
             )}
 
+            {!carregandoOrgaos &&
+              !erro &&
+              orgaos.length > 0 &&
+              orgaosFiltrados.length === 0 && (
+                <p className="bg-white px-5 py-6 text-sm text-slate-500">
+                  Nenhum órgão encontrado para "{busca}".
+                </p>
+              )}
+
             <ul className="flex flex-col bg-white">
-              {orgaos.map((orgao) => (
+              {orgaosFiltrados.map((orgao) => (
                 <li
                   key={orgao.id}
-                  className="grid grid-cols-3 items-center border-b border-slate-100 px-5 py-4 transition-colors last:border-b-0 hover:bg-slate-50/50"
+                  className="grid grid-cols-4 items-center border-b border-slate-100 px-5 py-4 transition-colors last:border-b-0 hover:bg-slate-50/50"
                 >
                   <span className="text-sm font-semibold text-navy">
                     {orgao.nome}
@@ -106,6 +184,24 @@ export default function OrgaosPage() {
                   </span>
                   <span className="text-sm text-slate-500">
                     {servicosPorOrgao.get(orgao.nome) ?? 0} cadastrados
+                  </span>
+
+                  <span className="flex items-center gap-3 text-sm font-semibold">
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/orgaos/${orgao.id}/editar`)}
+                      className="text-blue-600 hover:underline"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      disabled={excluindo === orgao.id}
+                      onClick={() => handleExcluir(orgao.id, orgao.nome)}
+                      className="text-red-600 hover:underline disabled:cursor-not-allowed disabled:text-red-600/50"
+                    >
+                      {excluindo === orgao.id ? "Excluindo..." : "Excluir"}
+                    </button>
                   </span>
                 </li>
               ))}

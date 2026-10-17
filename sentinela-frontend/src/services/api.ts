@@ -60,11 +60,16 @@ export async function request<T>(
 
   if (resposta.status === 204) return undefined as T;
 
-  return (await resposta.json()) as T;
+  // DELETE responde 200 com corpo vazio, então json() direto quebraria.
+  const texto = await resposta.text();
+  return (texto ? JSON.parse(texto) : undefined) as T;
 }
 
 export const api = {
   get: <T>(caminho: string) => request<T>(caminho),
   post: <T>(caminho: string, corpo: unknown) =>
     request<T>(caminho, { method: "POST", body: JSON.stringify(corpo) }),
+  patch: <T>(caminho: string, corpo: unknown) =>
+    request<T>(caminho, { method: "PATCH", body: JSON.stringify(corpo) }),
+  remove: <T>(caminho: string) => request<T>(caminho, { method: "DELETE" }),
 };
