@@ -75,6 +75,46 @@ em vez de hex literal.
 
 ## Integração com a API
 
+### Configuração
+
+```bash
+cp .env.example .env    # VITE_API_URL, padrão http://localhost:3000
+```
+
+Do lado da API é preciso definir **`CORS_ORIGIN`**, senão o navegador bloqueia
+as chamadas: `enableCors` usa `?? false` como padrão, que recusa toda origem.
+
+```bash
+# no .env da sentinela-api
+CORS_ORIGIN=http://localhost:5173
+```
+
+O contrato dos endpoints fica em `http://localhost:3000/api/docs` (Swagger).
+
+### Camada de serviços
+
+As chamadas HTTP ficam em [src/services/](src/services/), uma por recurso, e
+nunca dentro das telas. O [api.ts](src/services/api.ts) concentra a URL base e
+a tradução de erro do Nest em `ApiError` com o status preservado.
+
+| Função | Rota | Tela |
+|--------|------|------|
+| `listarOrgaos` | `GET /orgaos` | Lista de órgãos ✅ · select de Cadastrar serviço ✅ |
+| `criarOrgao` | `POST /orgaos` | — |
+| `listarServicos` | `GET /servicos` | Lista de serviços ✅ · contagem na lista de órgãos ✅ |
+| `criarServico` | `POST /servicos` | Cadastrar serviço ✅ |
+| `calcularPontuacao` | `POST /pontuacao/calcular` | — |
+
+A lista de órgãos, a lista de serviços e o cadastro de serviço consomem a API.
+Cadastrar órgão, resultados e relatório seguem com dados fixos — o que falta
+em cada um está na seção de divergências.
+
+Como `GET /orgaos` não carrega a relação `servicos`, a coluna "Serviços" da
+lista de órgãos é derivada de `GET /servicos`, agrupando pelo nome do órgão
+(que é `unique` na API).
+
+### Valores aceitos
+
 Os valores que a API aceita são a fonte da verdade. Os tipos em
 [src/types/](src/types/) espelham os enums de `sentinela-api`, e os rótulos de
 exibição ficam separados em [src/lib/servico.ts](src/lib/servico.ts) — assim o
@@ -86,21 +126,23 @@ Alinhado com a API:
 |-------|-----------------|
 | `tipoDado` | `publico`, `interno`, `pessoal`, `sensivel` |
 | `criticidade` | `baixa`, `media`, `alta` |
+| `resposta` do checklist | `CONFORME`, `PARCIAL`, `NAO_CONFORME`, `NAO_SE_APLICA` |
 
-### Divergências em aberto
+### Divergências com o Figma
 
-Campos que as telas têm e a API **não** tem. Como
+As telas só expõem campos que existem na API. Como
 [main.ts](../sentinela-api/src/main.ts) usa `forbidNonWhitelisted: true`,
-enviar qualquer um deles faz a requisição ser **rejeitada com 400**, não
-ignorada:
+um campo a mais no corpo da requisição faz a API **rejeitar com 400** em vez
+de ignorá-lo — por isso os campos sem contrapartida foram removidos:
 
-| Tela | Campo | Situação na API |
-|------|-------|-----------------|
-| Cadastrar órgão | `esfera`, `cnpj`, `endereco`, `descricao` | Não existem na entidade `Orgao` |
-| Lista de órgãos | `sigla` | Não existe na entidade `Orgao` |
-| Cadastrar serviço | `descricao` | Não existe na entidade `Servico` |
+| Tela | Campos removidos |
+|------|------------------|
+| Cadastrar órgão | `esfera`, `cnpj`, `endereco`, `descricao` |
+| Cadastrar serviço | `descricao` |
+| Lista de órgãos | `sigla` |
 
-A entidade `Orgao` da API tem apenas `nome` e `responsavel`, enquanto o frame
-`03_Cadastro_Orgao` do Figma especifica os seis campos. Como resolver isso
-ainda não foi definido pela equipe — até lá, as telas seguem o Figma e estes
-campos não têm destino na API.
+O que segue em aberto é uma decisão de produto, não de código: o frame
+`03_Cadastro_Orgao` do Figma especifica seis campos, e a entidade `Orgao` da
+API tem apenas `nome` e `responsavel`. Enquanto a equipe não definir se a API
+ganha os campos ou se o Figma é reduzido, o cadastro de órgão fica com os dois
+campos que a API aceita.
