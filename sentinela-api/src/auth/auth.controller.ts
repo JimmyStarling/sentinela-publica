@@ -1,11 +1,17 @@
-  import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
-  import { AuthGuard } from '@nestjs/passport';
-  import { AuthService } from './auth.service';
-  import { RegisterDto } from './dto/register.dto/register.dto';
-  import { LoginDto } from './dto/login.dto/login.dto';
-  import { RefreshTokenDto } from './dto/refresh-token.dto/refresh-token.dto';
-  import type { IAuthenticatedRequest } from './auth.interface';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { AuthService } from './auth.service';
+import { RegisterDto } from './dto/register.dto/register.dto';
+import { LoginDto } from './dto/login.dto/login.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto/refresh-token.dto';
+import type { IAuthenticatedRequest } from './auth.interface';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 
+@ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
 
@@ -20,6 +26,9 @@ export class AuthController {
     // Authenticate user
     @Post('login')
     @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: 'Autenticar usuário' })
+    @ApiResponse({ status: 200, description: 'Autenticação realizada.' })
+    @ApiResponse({ status: 401, description: 'Credenciais inválidas.' })
     async login(@Body() dto: LoginDto) {
       return this.authService.login(dto);
     }
