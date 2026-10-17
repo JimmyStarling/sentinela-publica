@@ -2,10 +2,8 @@ import { Controller } from '@nestjs/common';
 
 @Controller('auth')
 export class AuthController {
-	constructor(){}
-  
-  function getLogin(let email: String, let password: String): String{
-    return "Login feito com sucesso!";
+  getLogin(email: string, password: string): string {
+    return 'Login feito com sucesso!';
   }
 
   /**constructor(private readonly authService: AuthService) {}
