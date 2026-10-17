@@ -1,4 +1,3 @@
-
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -11,6 +10,9 @@ import { AuthController } from './auth/auth.controller';
 import { AuthService } from './auth/auth.service';
 import { OrgaosModule } from './orgaos/orgaos.module';
 import { ServicosModule } from './servicos/servicos.module';
+import { PontuacaoModule } from './pontuacao/pontuacao.module';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 export const { ObserveModule, ObserveInstrument } =
   createObserveModule();
@@ -42,23 +44,20 @@ export const { ObserveModule, ObserveInstrument } =
     
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'postgres' as const,
-        url: config.getOrThrow<string>('DATABASE_URL'),
-
-        ssl: {
-          rejectUnauthorized: true,
-        },
-
+      useFactory: (c: ConfigService) => ({
+        type: 'postgres',
+        url: c.getOrThrow<string>('DATABASE_URL'),
+        ssl: {ca: readFileSync(join(process.cwd(), 'certs', 'supabase-ca.crt')).toString(),rejectUnauthorized: true,},
         autoLoadEntities: true,
-        synchronize: false,
-        migrationsRun: false,
+        synchronize: false,//alterado de true para false para evitar perda de dados em produção
+        migrationsRun: false, // alterado de true para false para evitar perda de dados em produção
       }),
     }),
 
 
     OrgaosModule,
     ServicosModule,
+    PontuacaoModule,
   ],
 
   controllers: [AppController, AuthController],
