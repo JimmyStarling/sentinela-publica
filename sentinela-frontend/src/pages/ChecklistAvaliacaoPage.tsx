@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Paperclip } from "lucide-react";
 import type { Dominio } from "../types";
+import type { StatusResposta } from "../services/pontuacao";
 
 const dominios: Dominio[] = [
   { id: 1, titulo: "Governança e gestão" },
@@ -12,17 +13,18 @@ const dominios: Dominio[] = [
   { id: 6, titulo: "Conformidade e auditoria" },
 ];
 
-const opcoes = [
-  { valor: "Conforme", label: "Conforme" },
-  { valor: "Parcial", label: "Parcial" },
-  { valor: "NaoConforme", label: "Não conforme" },
-  { valor: "NaoSeAplica", label: "Não se aplica" },
+/** Os valores são os aceitos por POST /pontuacao/calcular. */
+const opcoes: { valor: StatusResposta; label: string }[] = [
+  { valor: "CONFORME", label: "Conforme" },
+  { valor: "PARCIAL", label: "Parcial" },
+  { valor: "NAO_CONFORME", label: "Não conforme" },
+  { valor: "NAO_SE_APLICA", label: "Não se aplica" },
 ];
 
 export default function ChecklistAvaliacaoPage() {
   const navigate = useNavigate();
   const [dominioAtivo, setDominioAtivo] = useState(1);
-  const [resposta, setResposta] = useState<string>("");
+  const [resposta, setResposta] = useState<StatusResposta | "">("");
   const [evidencia, setEvidencia] = useState("");
 
   function handleFinalizar() {
@@ -111,7 +113,9 @@ export default function ChecklistAvaliacaoPage() {
                     name="resposta"
                     value={op.valor}
                     checked={resposta === op.valor}
-                    onChange={(e) => setResposta(e.target.value)}
+                    onChange={(e) =>
+                      setResposta(e.target.value as StatusResposta)
+                    }
                     className="h-2.75 w-2.75 accent-blue-600"
                   />
                   {op.label}

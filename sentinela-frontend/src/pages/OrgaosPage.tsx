@@ -1,34 +1,28 @@
+import { useMemo } from "react";
 import { Plus, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
-import type { Orgao } from "../types";
-
-const orgaos: Orgao[] = [
-  {
-    id: "1",
-    nome: "Secretaria de Educação",
-    sigla: "SEDUC",
-    responsavel: "Maria Silva",
-    servicos: 4,
-  },
-  {
-    id: "2",
-    nome: "Secretaria de Saúde",
-    sigla: "SESAU",
-    responsavel: "João Souza",
-    servicos: 3,
-  },
-  {
-    id: "3",
-    nome: "Prefeitura Municipal",
-    sigla: "PM",
-    responsavel: "Ana Oliveira",
-    servicos: 5,
-  },
-];
+import { useOrgaos } from "../hooks/useOrgaos";
+import { useServicos } from "../hooks/useServicos";
 
 export default function OrgaosPage() {
   const navigate = useNavigate();
+  const { orgaos, carregando: carregandoOrgaos, erro: erroOrgaos } =
+    useOrgaos();
+  const { servicos, erro: erroServicos } = useServicos();
+
+  // GET /orgaos não carrega a relação `servicos`, então a contagem é
+  // derivada de GET /servicos. O nome do órgão é único na API, o que torna
+  // o agrupamento por nome confiável.
+  const servicosPorOrgao = useMemo(() => {
+    const contagem = new Map<string, number>();
+    for (const servico of servicos) {
+      contagem.set(servico.orgao, (contagem.get(servico.orgao) ?? 0) + 1);
+    }
+    return contagem;
+  }, [servicos]);
+
+  const erro = erroOrgaos ?? erroServicos;
 
   return (
     <div className="flex min-h-screen bg-surface font-sans text-navy">
@@ -71,28 +65,47 @@ export default function OrgaosPage() {
           </div>
 
           <section className="mt-8">
-            <div className="grid grid-cols-4 rounded-t-lg bg-subtle px-5 py-3 text-xs font-semibold text-slate-500">
+            <div className="grid grid-cols-3 rounded-t-lg bg-subtle px-5 py-3 text-xs font-semibold text-slate-500">
               <span>Órgão</span>
-              <span>Sigla</span>
               <span>Responsável</span>
               <span>Serviços</span>
             </div>
 
+            {carregandoOrgaos && (
+              <p className="bg-white px-5 py-6 text-sm text-slate-500">
+                Carregando órgãos...
+              </p>
+            )}
+
+            {erro && (
+              <p
+                role="alert"
+                className="bg-white px-5 py-6 text-sm font-medium text-red-600"
+              >
+                {erro}
+              </p>
+            )}
+
+            {!carregandoOrgaos && !erro && orgaos.length === 0 && (
+              <p className="bg-white px-5 py-6 text-sm text-slate-500">
+                Nenhum órgão cadastrado ainda.
+              </p>
+            )}
+
             <ul className="flex flex-col bg-white">
-              {orgaos.map((o) => (
+              {orgaos.map((orgao) => (
                 <li
-                  key={o.id}
-                  className="grid grid-cols-4 items-center border-b border-slate-100 px-5 py-4 transition-colors last:border-b-0 hover:bg-slate-50/50"
+                  key={orgao.id}
+                  className="grid grid-cols-3 items-center border-b border-slate-100 px-5 py-4 transition-colors last:border-b-0 hover:bg-slate-50/50"
                 >
                   <span className="text-sm font-semibold text-navy">
-                    {o.nome}
-                  </span>
-                  <span className="text-sm text-slate-500">{o.sigla}</span>
-                  <span className="text-sm text-slate-500">
-                    {o.responsavel}
+                    {orgao.nome}
                   </span>
                   <span className="text-sm text-slate-500">
-                    {o.servicos} cadastrados
+                    {orgao.responsavel}
+                  </span>
+                  <span className="text-sm text-slate-500">
+                    {servicosPorOrgao.get(orgao.nome) ?? 0} cadastrados
                   </span>
                 </li>
               ))}
