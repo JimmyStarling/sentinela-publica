@@ -1,13 +1,12 @@
 import Sidebar from "../components/Sidebar";
+import StatusBadge from "../components/StatusBadge";
+import type { Avaliacao as AvaliacaoBase } from "../types";
 
-type Status = "Em andamento" | "Concluída";
-
-interface Avaliacao {
-  orgao: string;
-  servico: string;
-  status: Status;
-  atualizacao: string;
-}
+/** Recorte exibido no painel: só o essencial de cada avaliação recente. */
+type Avaliacao = Pick<
+  AvaliacaoBase,
+  "orgao" | "servico" | "status" | "atualizacao"
+>;
 
 const resumo = [
   { label: "Órgãos cadastrados", valor: "05" },
@@ -36,11 +35,6 @@ const avaliacoes: Avaliacao[] = [
     atualizacao: "08/10/2026",
   },
 ];
-
-const statusStyle: Record<Status, string> = {
-  "Em andamento": "text-blue-600",
-  Concluída: "text-emerald-700",
-};
 
 export default function DashboardPage() {
   return (
@@ -76,7 +70,7 @@ export default function DashboardPage() {
           <section className="mt-8">
             <h2 className="text-lg font-bold">Avaliações recentes</h2>
 
-            <div className="mt-4 grid grid-cols-3 rounded-lg bg-[#E9EEF5] px-3.5 py-3 text-xs font-semibold text-slate-500">
+            <div className="mt-4 grid grid-cols-3 rounded-lg bg-subtle px-3.5 py-3 text-xs font-semibold text-slate-500">
               <span>Órgão / Serviço</span>
               <span>Status</span>
               <span>Última atualização</span>
@@ -92,9 +86,10 @@ export default function DashboardPage() {
                     <p className="text-xs font-bold">{a.orgao}</p>
                     <p className="text-[11px] text-slate-500">{a.servico}</p>
                   </div>
-                  <span className={`text-xs font-bold ${statusStyle[a.status]}`}>
-                    {a.status}
-                  </span>
+                  <StatusBadge
+                    status={a.status}
+                    className="text-xs font-bold"
+                  />
                   <span className="text-xs text-slate-500">{a.atualizacao}</span>
                 </li>
               ))}

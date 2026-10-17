@@ -2,6 +2,15 @@
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --color-navy: #0f2a43;
-  --color-surface: #f5f6f8;
+
+  /* Amostrados do Figma (02_Painel e 01_Login) */
+  --color-navy: #102a43;
+  --color-surface: #f4f6f8;
+
+  /* Neutros derivados do uso nas telas */
+  --color-subtle: #e9eef5; /* cabeçalho de tabela */
+  --color-line: #dfe6ef; /* bordas de card e de campo */
+  --color-muted: #718198; /* texto secundário */
+  --color-placeholder: #8a9bb1;
+  --color-track: #e4eaf2; /* trilha de barra de progresso */
 }

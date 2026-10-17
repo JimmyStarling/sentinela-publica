@@ -6,7 +6,7 @@ export default function RelatorioPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex min-h-screen bg-[#F4F6F8] font-sans text-[#183451]">
+    <div className="flex min-h-screen bg-surface font-sans text-navy">
       <Sidebar />
 
       <main className="flex-1 px-8 py-8 lg:px-10">
@@ -25,13 +25,13 @@ export default function RelatorioPage() {
           </header>
 
           {/* Card do Relatório */}
-          <section className="mt-6 overflow-hidden rounded-[9px] border border-[#DFE6EF] bg-white">
+          <section className="mt-6 overflow-hidden rounded-[9px] border border-line bg-white">
             {/* Barra superior escura */}
             <div className="flex items-center justify-between bg-navy px-4 py-2.25">
               <span className="text-[11px] font-semibold text-white">
                 Pré-visualização do relatório
               </span>
-              <button className="h-6 rounded-sm bg-[#2860F5] px-3 text-[10px] font-semibold text-white transition-colors hover:bg-[#1D4ED8]">
+              <button className="h-6 rounded-sm bg-blue-600 px-3 text-[10px] font-semibold text-white transition-colors hover:bg-blue-700">
                 Baixar PDF
               </button>
             </div>
@@ -46,7 +46,7 @@ export default function RelatorioPage() {
               <h2 className="mt-2.5 text-[18px] font-bold leading-5.5">
                 Relatório de Avaliação
               </h2>
-              <p className="mt-px text-[11px] text-[#718198]">
+              <p className="mt-px text-[11px] text-muted">
                 Segurança da informação
               </p>
 
@@ -54,29 +54,29 @@ export default function RelatorioPage() {
               <div className="mt-3.5 flex flex-col gap-1.25 text-[10px]">
                 <p>
                   <span className="font-bold">Órgão:</span>{" "}
-                  <span className="text-[#183451]">
+                  <span className="text-navy">
                     Secretaria de Educação
                   </span>
                 </p>
                 <p>
                   <span className="font-bold">Serviço:</span>{" "}
-                  <span className="text-[#183451]">Portal do Aluno</span>
+                  <span className="text-navy">Portal do Aluno</span>
                 </p>
                 <p>
                   <span className="font-bold">Data da avaliação:</span>{" "}
-                  <span className="text-[#183451]">15/10/2026</span>
+                  <span className="text-navy">15/10/2026</span>
                 </p>
               </div>
 
               {/* Pontuação + Resumo */}
               <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-[220px_1fr]">
-                <div className="flex flex-col justify-center rounded-md border border-[#D5DEEA] bg-[#F1F5FB] px-3.5 py-3.5">
-                  <p className="text-[10px] font-bold text-[#183451]">
+                <div className="flex flex-col justify-center rounded-md border border-line bg-slate-50 px-3.5 py-3.5">
+                  <p className="text-[10px] font-bold text-navy">
                     Pontuação geral
                   </p>
                   <p className="mt-2 text-[22px] font-bold leading-none">
                     55{" "}
-                    <span className="text-[14px] font-normal text-[#718198]">
+                    <span className="text-[14px] font-normal text-muted">
                       / 100
                     </span>
                   </p>
@@ -85,7 +85,7 @@ export default function RelatorioPage() {
                 <div className="flex flex-col gap-3.5">
                   <div>
                     <h3 className="text-[11px] font-bold">Resumo executivo</h3>
-                    <p className="mt-1.25 text-[10px] leading-3.75 text-[#183451]">
+                    <p className="mt-1.25 text-[10px] leading-3.75 text-navy">
                       A avaliação identificou oportunidades de melhoria nos
                       controles e processos de segurança.
                     </p>
@@ -95,7 +95,7 @@ export default function RelatorioPage() {
                     <h3 className="text-[11px] font-bold">
                       Recomendações principais
                     </h3>
-                    <ol className="mt-1.25 flex flex-col gap-0.75 text-[10px] leading-3.75 text-[#183451]">
+                    <ol className="mt-1.25 flex flex-col gap-0.75 text-[10px] leading-3.75 text-navy">
                       <li>
                         1. Revisar política de segurança e controle de acesso.
                       </li>
@@ -108,7 +108,7 @@ export default function RelatorioPage() {
               <div className="mt-6.5 flex justify-end">
                 <button
                   onClick={() => navigate("/inicio")}
-                  className="h-6.5 min-w-15.5 rounded-sm bg-[#E53935] px-4 text-[10px] font-semibold text-white transition-colors hover:bg-[#C62828]"
+                  className="h-6.5 min-w-15.5 rounded-sm bg-red-600 px-4 text-[10px] font-semibold text-white transition-colors hover:bg-red-700"
                 >
                   Sair
                 </button>

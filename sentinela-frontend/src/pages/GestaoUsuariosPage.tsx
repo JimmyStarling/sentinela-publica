@@ -1,15 +1,7 @@
 import { Plus } from "lucide-react";
 import Sidebar from "../components/Sidebar";
-
-type Status = "Ativo" | "Inativo";
-
-interface Usuario {
-  id: string;
-  nome: string;
-  email: string;
-  perfil: string;
-  status: Status;
-}
+import StatusBadge from "../components/StatusBadge";
+import type { Usuario } from "../types";
 
 const usuarios: Usuario[] = [
   {
@@ -42,14 +34,9 @@ const usuarios: Usuario[] = [
   },
 ];
 
-const statusColor: Record<Status, string> = {
-  Ativo: "text-emerald-600",
-  Inativo: "text-orange-500",
-};
-
 export default function GestaoUsuariosPage() {
   return (
-    <div className="flex min-h-screen bg-[#F4F6F8] font-sans text-[#183451]">
+    <div className="flex min-h-screen bg-surface font-sans text-navy">
       <Sidebar />
 
       <main className="flex-1 px-8 py-8 lg:px-10">
@@ -78,7 +65,7 @@ export default function GestaoUsuariosPage() {
           {/* Tabela */}
           <section className="mt-6">
             {/* Cabeçalho da Tabela */}
-            <div className="grid grid-cols-[1.2fr_1.5fr_1.2fr_0.7fr_0.7fr] rounded-t-lg bg-[#E9EEF5] px-5 py-3 text-xs font-semibold text-slate-500">
+            <div className="grid grid-cols-[1.2fr_1.5fr_1.2fr_0.7fr_0.7fr] rounded-t-lg bg-subtle px-5 py-3 text-xs font-semibold text-slate-500">
               <span>Nome</span>
               <span>E-mail</span>
               <span>Perfil</span>
@@ -98,11 +85,7 @@ export default function GestaoUsuariosPage() {
                   </span>
                   <span className="text-sm text-slate-500">{u.email}</span>
                   <span className="text-sm text-slate-500">{u.perfil}</span>
-                  <span
-                    className={`text-sm font-semibold ${statusColor[u.status]}`}
-                  >
-                    {u.status}
-                  </span>
+                  <StatusBadge status={u.status} />
                   <button className="text-left text-sm font-semibold text-blue-600 hover:underline">
                     Editar
                   </button>

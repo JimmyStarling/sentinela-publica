@@ -1,15 +1,13 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
-
-interface ServicoForm {
-  orgao: string;
-  nome: string;
-  descricao: string;
-  tipoDado: string;
-  criticidade: string;
-  responsavel: string;
-}
+import type { ServicoForm } from "../types";
+import {
+  CRITICIDADES,
+  ROTULO_CRITICIDADE,
+  ROTULO_TIPO_DADO,
+  TIPOS_DE_DADO,
+} from "../lib/servico";
 
 const formularioInicial: ServicoForm = {
   orgao: "",
@@ -20,26 +18,15 @@ const formularioInicial: ServicoForm = {
   responsavel: "",
 };
 
-const tiposDeDados = [
-  "Dados pessoais",
-  "Dados pessoais sensíveis",
-  "Dados financeiros",
-  "Dados públicos",
-  "Dados administrativos",
-  "Dados de autenticação",
-];
-
-const niveisDeCriticidade = ["Baixa", "Média", "Alta", "Crítica"];
-
 const inputClassName =
-  "h-[35px] w-full rounded-[4px] border border-[#D5DEEA] " +
-  "bg-white px-[7px] text-[10px] text-[#183451] " +
+  "h-[35px] w-full rounded-[4px] border border-line " +
+  "bg-white px-[7px] text-[10px] text-navy " +
   "outline-none transition-colors " +
-  "placeholder:text-[#8A9BB1] " +
+  "placeholder:text-placeholder " +
   "focus:border-blue-500 focus:ring-2 focus:ring-blue-500/15";
 
 const labelClassName =
-  "mb-[5px] block text-[10px] font-semibold text-[#183451]";
+  "mb-[5px] block text-[10px] font-semibold text-navy";
 
 export default function CadastrarServicoPage() {
   const navigate = useNavigate();
@@ -48,7 +35,10 @@ export default function CadastrarServicoPage() {
   const [mensagem, setMensagem] = useState("");
   const [erro, setErro] = useState("");
 
-  function atualizarCampo(campo: keyof ServicoForm, valor: string) {
+  function atualizarCampo<C extends keyof ServicoForm>(
+    campo: C,
+    valor: ServicoForm[C],
+  ) {
     setFormulario((estadoAtual) => ({ ...estadoAtual, [campo]: valor }));
     setMensagem("");
     setErro("");
@@ -82,7 +72,7 @@ export default function CadastrarServicoPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#F4F6F8] font-sans text-[#183451]">
+    <div className="flex min-h-screen bg-surface font-sans text-navy">
       <Sidebar />
 
       <main className="flex-1 px-6 py-7 sm:px-9 sm:py-8">
@@ -94,7 +84,7 @@ export default function CadastrarServicoPage() {
 
             <nav
               aria-label="Navegação estrutural"
-              className="mt-px flex items-center gap-1 text-[9px] text-[#718198]"
+              className="mt-px flex items-center gap-1 text-[9px] text-muted"
             >
               <span>Cadastros</span>
               <span aria-hidden="true">•</span>
@@ -106,7 +96,7 @@ export default function CadastrarServicoPage() {
             </h1>
           </header>
 
-          <section className="mt-3.75 rounded-[9px] border border-[#DFE6EF] bg-white px-4.25 pb-6 pt-3 sm:px-4.5">
+          <section className="mt-3.75 rounded-[9px] border border-line bg-white px-4.25 pb-6 pt-3 sm:px-4.5">
             <h2 className="text-[11px] font-bold leading-5">
               Informações do serviço
             </h2>
@@ -123,7 +113,7 @@ export default function CadastrarServicoPage() {
                   value={formulario.orgao}
                   onChange={(e) => atualizarCampo("orgao", e.target.value)}
                   className={`${inputClassName} ${
-                    formulario.orgao === "" ? "text-[#8A9BB1]" : ""
+                    formulario.orgao === "" ? "text-placeholder" : ""
                   }`}
                 >
                   <option value="" disabled>
@@ -187,17 +177,22 @@ export default function CadastrarServicoPage() {
                     name="tipoDado"
                     required
                     value={formulario.tipoDado}
-                    onChange={(e) => atualizarCampo("tipoDado", e.target.value)}
+                    onChange={(e) =>
+                      atualizarCampo(
+                        "tipoDado",
+                        e.target.value as ServicoForm["tipoDado"],
+                      )
+                    }
                     className={`${inputClassName} ${
-                      formulario.tipoDado === "" ? "text-[#8A9BB1]" : ""
+                      formulario.tipoDado === "" ? "text-placeholder" : ""
                     }`}
                   >
                     <option value="" disabled>
                       Selecione o tipo de dado
                     </option>
-                    {tiposDeDados.map((tipo) => (
+                    {TIPOS_DE_DADO.map((tipo) => (
                       <option key={tipo} value={tipo}>
-                        {tipo}
+                        {ROTULO_TIPO_DADO[tipo]}
                       </option>
                     ))}
                   </select>
@@ -213,18 +208,21 @@ export default function CadastrarServicoPage() {
                     required
                     value={formulario.criticidade}
                     onChange={(e) =>
-                      atualizarCampo("criticidade", e.target.value)
+                      atualizarCampo(
+                        "criticidade",
+                        e.target.value as ServicoForm["criticidade"],
+                      )
                     }
                     className={`${inputClassName} ${
-                      formulario.criticidade === "" ? "text-[#8A9BB1]" : ""
+                      formulario.criticidade === "" ? "text-placeholder" : ""
                     }`}
                   >
                     <option value="" disabled>
                       Selecione a criticidade
                     </option>
-                    {niveisDeCriticidade.map((nivel) => (
+                    {CRITICIDADES.map((nivel) => (
                       <option key={nivel} value={nivel}>
-                        {nivel}
+                        {ROTULO_CRITICIDADE[nivel]}
                       </option>
                     ))}
                   </select>
@@ -272,14 +270,14 @@ export default function CadastrarServicoPage() {
                 <button
                   type="button"
                   onClick={handleVoltar}
-                  className="h-5.75 min-w-15.5 rounded-sm border border-[#4B79FF] bg-[#E8EEFF] px-3 text-[10px] font-semibold text-[#2860F5] transition-colors hover:bg-[#D9E3FF]"
+                  className="h-5.75 min-w-15.5 rounded-sm border border-blue-500 bg-blue-50 px-3 text-[10px] font-semibold text-blue-600 transition-colors hover:bg-blue-100"
                 >
                   Voltar
                 </button>
 
                 <button
                   type="submit"
-                  className="h-5.75 min-w-27.5 rounded-sm bg-[#2860F5] px-4 text-[10px] font-semibold text-white transition-colors hover:bg-[#1D4ED8]"
+                  className="h-5.75 min-w-27.5 rounded-sm bg-blue-600 px-4 text-[10px] font-semibold text-white transition-colors hover:bg-blue-700"
                 >
                   Salvar serviço
                 </button>

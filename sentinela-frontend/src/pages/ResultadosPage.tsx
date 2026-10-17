@@ -1,9 +1,5 @@
 import { FileText } from "lucide-react";
-
-interface DominioResultado {
-  nome: string;
-  percentual: number;
-}
+import type { DominioResultado } from "../types";
 
 const resultadoPorDominio: DominioResultado[] = [
   { nome: "Governança e gestão", percentual: 80 },
@@ -35,7 +31,7 @@ function CircularProgress({ valor }: { valor: number }) {
           cy="55"
           r={raio}
           fill="none"
-          stroke="#E4EAF2"
+          className="stroke-track"
           strokeWidth="11"
         />
         {/* Anel de progresso (3 segmentos visuais como no design) */}
@@ -44,7 +40,7 @@ function CircularProgress({ valor }: { valor: number }) {
           cy="55"
           r={raio}
           fill="none"
-          stroke="#2860F5"
+          className="stroke-blue-600"
           strokeWidth="11"
           strokeDasharray={circunferencia}
           strokeDashoffset={offset}
@@ -63,7 +59,7 @@ function CircularProgress({ valor }: { valor: number }) {
 
 export default function ResultadosPage() {
   return (
-    <main className="min-h-screen bg-[#F4F6F8] px-6 py-7 font-sans text-[#183451] sm:px-10 sm:py-8">
+    <main className="min-h-screen bg-surface px-6 py-7 font-sans text-navy sm:px-10 sm:py-8">
       <div className="mx-auto w-full max-w-205">
         {/* Cabeçalho */}
         <header>
@@ -72,7 +68,7 @@ export default function ResultadosPage() {
           </p>
           <nav
             aria-label="Navegação estrutural"
-            className="mt-px flex items-center gap-1 text-[9px] text-[#718198]"
+            className="mt-px flex items-center gap-1 text-[9px] text-muted"
           >
             <span>Resultados</span>
             <span aria-hidden="true">•</span>
@@ -87,20 +83,20 @@ export default function ResultadosPage() {
         {/* Cards superiores */}
         <div className="mt-3.5 grid grid-cols-1 gap-3.25 md:grid-cols-[220px_1fr]">
           {/* Card: Pontuação geral */}
-          <section className="flex flex-col items-center justify-center rounded-[9px] border border-[#DFE6EF] bg-white px-3.5 py-4">
+          <section className="flex flex-col items-center justify-center rounded-[9px] border border-line bg-white px-3.5 py-4">
             <h2 className="mb-2.5 self-start text-[11px] font-bold leading-5">
               Pontuação geral
             </h2>
 
             <CircularProgress valor={55} />
 
-            <p className="mt-2.5 text-[11px] font-bold text-[#C97B2B]">
+            <p className="mt-2.5 text-[11px] font-bold text-amber-700">
               Maturidade intermediária
             </p>
           </section>
 
           {/* Card: Resultado por domínio */}
-          <section className="rounded-[9px] border border-[#DFE6EF] bg-white px-4 pb-4 pt-3.5">
+          <section className="rounded-[9px] border border-line bg-white px-4 pb-4 pt-3.5">
             <h2 className="text-[11px] font-bold leading-5">
               Resultado por domínio
             </h2>
@@ -108,18 +104,18 @@ export default function ResultadosPage() {
             <ul className="mt-3 flex flex-col gap-2.25">
               {resultadoPorDominio.map((d) => (
                 <li key={d.nome} className="flex items-center gap-3">
-                  <span className="w-33.75 shrink-0 text-[9px] text-[#183451]">
+                  <span className="w-33.75 shrink-0 text-[9px] text-navy">
                     {d.nome}
                   </span>
 
-                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#E4EAF2]">
+                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-track">
                     <div
-                      className="h-full rounded-full bg-[#2860F5]"
+                      className="h-full rounded-full bg-blue-600"
                       style={{ width: `${d.percentual}%` }}
                     />
                   </div>
 
-                  <span className="w-7.5 shrink-0 text-right text-[9px] font-semibold text-[#183451]">
+                  <span className="w-7.5 shrink-0 text-right text-[9px] font-semibold text-navy">
                     {d.percentual}%
                   </span>
                 </li>
@@ -129,7 +125,7 @@ export default function ResultadosPage() {
         </div>
 
         {/* Card: Lacunas e recomendações */}
-        <section className="mt-3.5 rounded-[9px] border border-[#DFE6EF] bg-white px-4.5 pb-4 pt-3.5">
+        <section className="mt-3.5 rounded-[9px] border border-line bg-white px-4.5 pb-4 pt-3.5">
           <h2 className="text-[12px] font-bold leading-5">
             Lacunas e recomendações prioritárias
           </h2>
@@ -138,9 +134,9 @@ export default function ResultadosPage() {
             {lacunas.map((item) => (
               <li
                 key={item}
-                className="flex items-start gap-1.75 text-[10px] leading-3.75 text-[#183451]"
+                className="flex items-start gap-1.75 text-[10px] leading-3.75 text-navy"
               >
-                <span className="mt-1.25 h-0.75 w-0.75 shrink-0 rounded-full bg-[#183451]" />
+                <span className="mt-1.25 h-0.75 w-0.75 shrink-0 rounded-full bg-navy" />
                 {item}
               </li>
             ))}
@@ -149,7 +145,7 @@ export default function ResultadosPage() {
           <div className="mt-4.5 flex justify-end">
             <button
               type="button"
-              className="flex h-6.5 items-center gap-2 rounded-sm bg-[#2860F5] px-4 text-[10px] font-semibold text-white transition-colors hover:bg-[#1D4ED8]"
+              className="flex h-6.5 items-center gap-2 rounded-sm bg-blue-600 px-4 text-[10px] font-semibold text-white transition-colors hover:bg-blue-700"
             >
               <FileText size={11} />
               Visualizar relatório PDF
