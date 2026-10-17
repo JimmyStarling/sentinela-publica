@@ -69,23 +69,55 @@ Muitos órgãos públicos não têm uma forma simples e padronizada de medir o n
 
 ## Tecnologias
 
-> _Preencher conforme a stack escolhida pela equipe._
+- **Front-end:** React 19, TypeScript, Vite, Tailwind CSS, React Router
+- **Back-end:** NestJS 12, TypeScript, TypeORM
+- **Banco de dados:** PostgreSQL
 
-- Front-end: _a definir_
-- Back-end: _a definir_
-- Banco de dados: _a definir_
+## Estrutura do repositório
+
+```
+sentinela-publica/
+├── sentinela-api/        # API REST em NestJS
+└── sentinela-frontend/   # Interface web em React + Vite
+```
+
+Cada pasta é um projeto Node independente, com o seu próprio `package.json`.
+Consulte o README de cada uma para detalhes:
+[sentinela-api](sentinela-api/README.md) · [sentinela-frontend](sentinela-frontend/README.md)
 
 ## Como executar
 
-> _Seção a completar quando houver a primeira versão executável._
+Requisitos: **Node.js 20+**, **npm** e um **PostgreSQL** acessível.
 
 ```bash
 # clonar o repositório
 git clone https://github.com/<organizacao>/sentinela-publica.git
 cd sentinela-publica
-
-# instruções de instalação e execução serão adicionadas aqui
 ```
+
+### Back-end (API)
+
+```bash
+cd sentinela-api
+npm install
+
+# configurar o banco de dados
+cp .env.example .env     # e preencher a DATABASE_URL
+
+npm run start:dev        # sobe em http://localhost:3000
+```
+
+### Front-end
+
+Em outro terminal, a partir da raiz do repositório:
+
+```bash
+cd sentinela-frontend
+npm install
+npm run dev              # sobe em http://localhost:5173
+```
+
+> **Estado atual:** o front-end exibe as telas com dados fixos (mock); a integração com a API ainda não foi implementada. Por isso ele pode ser executado sozinho, sem o back-end.
 
 ## Roadmap
 
