@@ -1,4 +1,4 @@
-export type { Orgao, OrgaoForm } from "./orgao";
+export type { OrgaoForm } from "./orgao";
 export type { Criticidade, Servico, ServicoForm, TipoDado } from "./servico";
 export type { Avaliacao, StatusAvaliacao } from "./avaliacao";
 export type {

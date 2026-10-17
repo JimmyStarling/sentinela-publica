@@ -2,54 +2,12 @@ import { Plus, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import CriticidadeBadge from "../components/CriticidadeBadge";
-import type { Servico } from "../types";
 import { ROTULO_TIPO_DADO } from "../lib/servico";
-
-const servicos: Servico[] = [
-  {
-    id: "1",
-    nome: "Portal do Aluno",
-    orgao: "Secretaria de Educação",
-    responsavel: "Maria Silva",
-    tipoDado: "pessoal",
-    criticidade: "alta",
-  },
-  {
-    id: "2",
-    nome: "Matrícula online",
-    orgao: "Secretaria de Educação",
-    responsavel: "Maria Silva",
-    tipoDado: "pessoal",
-    criticidade: "media",
-  },
-  {
-    id: "3",
-    nome: "Agendamento de consultas",
-    orgao: "Secretaria de Saúde",
-    responsavel: "João Souza",
-    tipoDado: "sensivel",
-    criticidade: "alta",
-  },
-  {
-    id: "4",
-    nome: "Sistema de protocolo",
-    orgao: "Prefeitura Municipal",
-    responsavel: "Ana Oliveira",
-    tipoDado: "interno",
-    criticidade: "media",
-  },
-  {
-    id: "5",
-    nome: "Portal da transparência",
-    orgao: "Prefeitura Municipal",
-    responsavel: "Pedro Lima",
-    tipoDado: "publico",
-    criticidade: "baixa",
-  },
-];
+import { useServicos } from "../hooks/useServicos";
 
 export default function ServicosPage() {
   const navigate = useNavigate();
+  const { servicos, carregando, erro } = useServicos();
 
   return (
     <div className="flex min-h-screen bg-surface font-sans text-navy">
@@ -98,6 +56,27 @@ export default function ServicosPage() {
               <span>Criticidade</span>
               <span>Responsável</span>
             </div>
+
+            {carregando && (
+              <p className="bg-white px-5 py-6 text-sm text-slate-500">
+                Carregando serviços...
+              </p>
+            )}
+
+            {erro && (
+              <p
+                role="alert"
+                className="bg-white px-5 py-6 text-sm font-medium text-red-600"
+              >
+                {erro}
+              </p>
+            )}
+
+            {!carregando && !erro && servicos.length === 0 && (
+              <p className="bg-white px-5 py-6 text-sm text-slate-500">
+                Nenhum serviço cadastrado ainda.
+              </p>
+            )}
 
             <ul className="flex flex-col bg-white">
               {servicos.map((s) => (
