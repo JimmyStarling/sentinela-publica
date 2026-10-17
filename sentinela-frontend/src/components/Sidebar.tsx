@@ -13,6 +13,7 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
+import { useAuth } from "../auth/AuthContext";
 import Logo from "./Logo";
 
 interface SubItem {
@@ -53,7 +54,13 @@ const menu: MenuItem[] = [
 
 export default function Sidebar() {
   const navigate = useNavigate();
+  const { sair } = useAuth();
   const [abertos, setAbertos] = useState<string[]>(["Órgãos", "Serviços"]);
+
+  function handleSair() {
+    sair();
+    navigate("/", { replace: true });
+  }
 
   function toggleSubmenu(label: string) {
     setAbertos((atual) =>
@@ -145,7 +152,7 @@ export default function Sidebar() {
           Ajuda
         </button>
         <button
-          onClick={() => navigate("/")}
+          onClick={handleSair}
           className="flex items-center gap-2 text-left hover:text-white"
         >
           <LogOut size={14} />
