@@ -13,6 +13,7 @@ import { ServicosModule } from './servicos/servicos.module';
 import { PontuacaoModule } from './pontuacao/pontuacao.module';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { AuthModule } from './auth/auth.module';
 
 export const { ObserveModule, ObserveInstrument } =
   createObserveModule();
@@ -30,15 +31,21 @@ export const { ObserveModule, ObserveInstrument } =
         DATABASE_URL: Joi.string().required(),
         SUPABASE_URL: Joi.string().uri().required(),
         SUPABASE_PUBLISHABLE_KEY: Joi.string().required(),
+        OBSERVE_APP_KEY: Joi.string().required(),
+        OBSERVE_APP_SECRET: Joi.string().required(),
       }).prefs({
         abortEarly: false,
       }),
     }),
 
-    ObserveModule.forRoot({
-      appKey: process.env.OBSERVE_APP_KEY!,
-      appSecret: process.env.OBSERVE_APP_SECRET!,
-      serviceId: 'sentinela-api',
+    ObserveModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        appKey: config.getOrThrow<string>('OBSERVE_APP_KEY'),
+        appSecret: config.getOrThrow<string>('OBSERVE_APP_SECRET'),
+        serviceId: 'sentinela-api',
+      }),
     }),
 
     
@@ -54,13 +61,13 @@ export const { ObserveModule, ObserveInstrument } =
       }),
     }),
 
-
+    AuthModule,
     OrgaosModule,
     ServicosModule,
     PontuacaoModule,
   ],
 
   controllers: [AppController, AuthController],
-  providers: [AppService, AuthService],
+  providers: [AppService],
 })
 export class AppModule {}
