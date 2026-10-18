@@ -17,11 +17,13 @@ export interface Servico {
   criticidade: Criticidade;
 }
 
-/** Campos do formulário de cadastro de serviço. */
+/**
+ * Campos do formulário de cadastro de serviço, espelhando o CreateServicoDto
+ * da API. O órgão é enviado como id (orgaoId), não como nome.
+ */
 export interface ServicoForm {
-  orgao: string;
+  orgaoId: number | "";
   nome: string;
-  descricao: string;
   tipoDado: TipoDado | "";
   criticidade: Criticidade | "";
   responsavel: string;

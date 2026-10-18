@@ -5,14 +5,8 @@ import type { OrgaoForm } from "../types";
 
 const formularioInicial: OrgaoForm = {
   nome: "",
-  esfera: "",
-  cnpj: "",
-  endereco: "",
   responsavel: "",
-  descricao: "",
 };
-
-const esferas = ["Federal", "Estadual", "Municipal"];
 
 const inputClassName =
   "h-[35px] w-full rounded-[4px] border border-line " +
@@ -40,7 +34,7 @@ export default function CadastrarOrgaoPage() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const camposObrigatorios = [formulario.nome, formulario.esfera];
+    const camposObrigatorios = [formulario.nome, formulario.responsavel];
 
     if (camposObrigatorios.some((campo) => !campo.trim())) {
       setErro("Preencha todos os campos obrigatórios.");
@@ -102,7 +96,7 @@ export default function CadastrarOrgaoPage() {
                   name="nome"
                   type="text"
                   required
-                  maxLength={120}
+                  maxLength={150}
                   value={formulario.nome}
                   onChange={(e) => atualizarCampo("nome", e.target.value)}
                   placeholder="Ex.: Secretaria Municipal de Educação"
@@ -110,99 +104,22 @@ export default function CadastrarOrgaoPage() {
                 />
               </div>
 
-              {/* Esfera + CNPJ */}
-              <div className="mt-3.5 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
-                <div>
-                  <label htmlFor="esfera" className={labelClassName}>
-                    Esfera *
-                  </label>
-                  <select
-                    id="esfera"
-                    name="esfera"
-                    required
-                    value={formulario.esfera}
-                    onChange={(e) => atualizarCampo("esfera", e.target.value)}
-                    className={`${inputClassName} ${
-                      formulario.esfera === "" ? "text-placeholder" : ""
-                    }`}
-                  >
-                    <option value="" disabled>
-                      Selecione a esfera
-                    </option>
-                    {esferas.map((esfera) => (
-                      <option key={esfera} value={esfera}>
-                        {esfera}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label htmlFor="cnpj" className={labelClassName}>
-                    CNPJ
-                  </label>
-                  <input
-                    id="cnpj"
-                    name="cnpj"
-                    type="text"
-                    maxLength={18}
-                    value={formulario.cnpj}
-                    onChange={(e) => atualizarCampo("cnpj", e.target.value)}
-                    placeholder="00.000.000/0000-00"
-                    className={inputClassName}
-                  />
-                </div>
-              </div>
-
-              {/* Endereço */}
-              <div className="mt-3.5">
-                <label htmlFor="endereco" className={labelClassName}>
-                  Endereço
-                </label>
-                <input
-                  id="endereco"
-                  name="endereco"
-                  type="text"
-                  maxLength={200}
-                  value={formulario.endereco}
-                  onChange={(e) => atualizarCampo("endereco", e.target.value)}
-                  placeholder="Digite o endereço institucional"
-                  className={inputClassName}
-                />
-              </div>
-
               {/* Responsável */}
               <div className="mt-3.5">
                 <label htmlFor="responsavel" className={labelClassName}>
-                  Responsável
+                  Responsável *
                 </label>
                 <input
                   id="responsavel"
                   name="responsavel"
                   type="text"
-                  maxLength={120}
+                  required
+                  maxLength={150}
                   value={formulario.responsavel}
                   onChange={(e) =>
                     atualizarCampo("responsavel", e.target.value)
                   }
-                  placeholder="Nome do responsável pelo serviço"
-                  className={inputClassName}
-                />
-              </div>
-
-              {/* Descrição */}
-              <div className="mt-3.5">
-                <label htmlFor="descricao" className={labelClassName}>
-                  Descrição
-                </label>
-                <input
-                  id="descricao"
-                  name="descricao"
-                  type="text"
-                  maxLength={300}
-                  value={formulario.descricao}
-                  onChange={(e) => atualizarCampo("descricao", e.target.value)}
-                  placeholder="Breve descrição do órgão"
+                  placeholder="Nome do responsável pelo órgão"
                   className={inputClassName}
                 />
               </div>

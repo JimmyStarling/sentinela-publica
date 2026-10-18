@@ -2,6 +2,9 @@ import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import type { ServicoForm } from "../types";
+import { ApiError } from "../services/api";
+import { criarServico } from "../services/servicos";
+import { useOrgaos } from "../hooks/useOrgaos";
 import {
   CRITICIDADES,
   ROTULO_CRITICIDADE,
@@ -10,9 +13,8 @@ import {
 } from "../lib/servico";
 
 const formularioInicial: ServicoForm = {
-  orgao: "",
+  orgaoId: "",
   nome: "",
-  descricao: "",
   tipoDado: "",
   criticidade: "",
   responsavel: "",
@@ -31,7 +33,10 @@ const labelClassName =
 export default function CadastrarServicoPage() {
   const navigate = useNavigate();
 
+  const { orgaos, carregando: carregandoOrgaos, erro: erroOrgaos } =
+    useOrgaos();
   const [formulario, setFormulario] = useState<ServicoForm>(formularioInicial);
+  const [enviando, setEnviando] = useState(false);
   const [mensagem, setMensagem] = useState("");
   const [erro, setErro] = useState("");
 
@@ -44,27 +49,43 @@ export default function CadastrarServicoPage() {
     setErro("");
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const camposObrigatorios = [
-      formulario.orgao,
-      formulario.nome,
-      formulario.tipoDado,
-      formulario.criticidade,
-      formulario.responsavel,
-    ];
-
-    if (camposObrigatorios.some((campo) => !campo.trim())) {
+    if (
+      formulario.orgaoId === "" ||
+      formulario.tipoDado === "" ||
+      formulario.criticidade === "" ||
+      !formulario.nome.trim() ||
+      !formulario.responsavel.trim()
+    ) {
       setErro("Preencha todos os campos obrigatórios.");
       return;
     }
 
-    console.log("Dados do serviço:", formulario);
     setErro("");
-    setMensagem(
-      "Serviço validado com sucesso! A integração com a API ainda precisa ser feita.",
-    );
+    setMensagem("");
+    setEnviando(true);
+
+    try {
+      await criarServico({
+        nome: formulario.nome.trim(),
+        responsavel: formulario.responsavel.trim(),
+        tipoDado: formulario.tipoDado,
+        criticidade: formulario.criticidade,
+        orgaoId: formulario.orgaoId,
+      });
+      setFormulario(formularioInicial);
+      setMensagem("Serviço cadastrado com sucesso.");
+    } catch (motivo: unknown) {
+      setErro(
+        motivo instanceof ApiError
+          ? motivo.message
+          : "Erro inesperado ao cadastrar o serviço.",
+      );
+    } finally {
+      setEnviando(false);
+    }
   }
 
   function handleVoltar() {
@@ -110,28 +131,36 @@ export default function CadastrarServicoPage() {
                   id="orgao"
                   name="orgao"
                   required
-                  value={formulario.orgao}
-                  onChange={(e) => atualizarCampo("orgao", e.target.value)}
+                  disabled={carregandoOrgaos || orgaos.length === 0}
+                  value={formulario.orgaoId}
+                  onChange={(e) =>
+                    atualizarCampo(
+                      "orgaoId",
+                      e.target.value === "" ? "" : Number(e.target.value),
+                    )
+                  }
                   className={`${inputClassName} ${
-                    formulario.orgao === "" ? "text-placeholder" : ""
+                    formulario.orgaoId === "" ? "text-placeholder" : ""
                   }`}
                 >
                   <option value="" disabled>
-                    Selecione um órgão cadastrado
+                    {carregandoOrgaos
+                      ? "Carregando órgãos..."
+                      : orgaos.length === 0
+                        ? "Nenhum órgão cadastrado"
+                        : "Selecione um órgão cadastrado"}
                   </option>
-                  <option value="Secretaria de Educação">
-                    Secretaria de Educação
-                  </option>
-                  <option value="Secretaria de Saúde">
-                    Secretaria de Saúde
-                  </option>
-                  <option value="Secretaria de Administração">
-                    Secretaria de Administração
-                  </option>
-                  <option value="Prefeitura Municipal">
-                    Prefeitura Municipal
-                  </option>
+                  {orgaos.map((orgao) => (
+                    <option key={orgao.id} value={orgao.id}>
+                      {orgao.nome}
+                    </option>
+                  ))}
                 </select>
+                {erroOrgaos && (
+                  <p role="alert" className="mt-1 text-[10px] text-red-600">
+                    {erroOrgaos}
+                  </p>
+                )}
               </div>
 
               <div className="mt-2.25">
@@ -147,22 +176,6 @@ export default function CadastrarServicoPage() {
                   value={formulario.nome}
                   onChange={(e) => atualizarCampo("nome", e.target.value)}
                   placeholder="Ex.: Portal do Aluno"
-                  className={inputClassName}
-                />
-              </div>
-
-              <div className="mt-2.25">
-                <label htmlFor="descricao" className={labelClassName}>
-                  Descrição
-                </label>
-                <input
-                  id="descricao"
-                  name="descricao"
-                  type="text"
-                  maxLength={300}
-                  value={formulario.descricao}
-                  onChange={(e) => atualizarCampo("descricao", e.target.value)}
-                  placeholder="Descreva a finalidade do serviço"
                   className={inputClassName}
                 />
               </div>
@@ -277,9 +290,10 @@ export default function CadastrarServicoPage() {
 
                 <button
                   type="submit"
-                  className="h-5.75 min-w-27.5 rounded-sm bg-blue-600 px-4 text-[10px] font-semibold text-white transition-colors hover:bg-blue-700"
+                  disabled={enviando}
+                  className="h-5.75 min-w-27.5 rounded-sm bg-blue-600 px-4 text-[10px] font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-600/60"
                 >
-                  Salvar serviço
+                  {enviando ? "Salvando..." : "Salvar serviço"}
                 </button>
               </div>
             </form>
